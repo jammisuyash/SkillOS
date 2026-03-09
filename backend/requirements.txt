@@ -1,0 +1,13 @@
+# SkillOS — Python Dependencies
+# Phase 1: stdlib only (sqlite3, threading, http.server, subprocess, resource)
+# No external dependencies required for Phase 0 and Phase 1.
+
+# Phase 2 additions (uncomment when needed):
+# psycopg2-binary>=2.9      # PostgreSQL driver (swap from SQLite)
+# PyJWT>=2.8                # JWT auth tokens
+# bcrypt>=4.1               # Password hashing
+# APScheduler>=3.10         # Background job scheduler (zombie cleaner upgrade)
+
+# Phase 3 additions:
+# flask>=3.0                # If switching from stdlib http.server
+# gunicorn>=21.0            # Production WSGI server

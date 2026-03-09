@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>SkillOS — Verified Developer Skills</title>
+    <meta name="description" content="Prove your skills. Get hired. The developer skill verification platform." />
+
+    <!-- PWA / Mobile App Meta -->
+    <meta name="application-name" content="SkillOS" />
+    <meta name="apple-mobile-web-app-title" content="SkillOS" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#7c6af7" />
+    <meta name="msapplication-TileColor" content="#0a0a0f" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SkillOS — Verified Developer Skills" />
+    <meta property="og:description" content="Prove your skills. Get hired." />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c6af7'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='white' font-family='monospace'>S</text></svg>" />
+
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <style>
+      body { background: #0a0a0f; margin: 0; }
+      #root { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('[PWA] SW registered:', reg.scope))
+            .catch(err => console.log('[PWA] SW registration failed:', err));
+        });
+      }
+    </script>
+  </body>
+</html>

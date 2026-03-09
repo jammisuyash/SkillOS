@@ -1,0 +1,40 @@
+# SkillOS — Python Dependencies (Production)
+# FastAPI is now the default server
+
+# ── Core Framework ────────────────────────────────────────────────────────────
+fastapi[all]>=0.111.0          # ASGI web framework
+uvicorn[standard]>=0.29.0      # ASGI server (uvloop + httptools for max speed)
+pydantic>=2.0.0                # Request/response validation
+python-multipart>=0.0.9        # File upload support
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+PyJWT>=2.8.0                   # JWT tokens
+bcrypt>=4.1.2                  # Password hashing
+pyotp>=2.9.0                   # TOTP / 2FA
+
+# ── Database ──────────────────────────────────────────────────────────────────
+psycopg2-binary>=2.9.9         # PostgreSQL driver (binary = no compile needed)
+# asyncpg>=0.29.0              # Async PostgreSQL (optional, for high throughput)
+
+# ── Background Jobs ───────────────────────────────────────────────────────────
+celery[redis]>=5.3.6           # Task queue
+redis>=5.0.3                   # Redis client
+
+# ── AI Providers (all 4 supported) ───────────────────────────────────────────
+anthropic>=0.25.0              # Claude (Haiku, Sonnet, Opus)
+openai>=1.30.0                 # GPT-4o-mini + GPT-4o
+google-generativeai>=0.5.0     # Gemini Flash / Pro
+groq>=0.9.0                    # Groq (Llama 3.3 70B — fastest)
+
+# ── Payments ──────────────────────────────────────────────────────────────────
+razorpay>=1.4.1                # Razorpay (India payments)
+
+# ── Email ─────────────────────────────────────────────────────────────────────
+# stdlib smtplib used — no extra package needed
+
+# ── Config ────────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.1           # Load .env in development
+
+# ── Monitoring (optional but recommended) ─────────────────────────────────────
+# sentry-sdk[fastapi]>=2.0.0   # Error tracking
+# prometheus-fastapi-instrumentator>=6.0.0  # Metrics

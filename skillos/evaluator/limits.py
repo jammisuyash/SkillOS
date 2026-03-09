@@ -1,0 +1,15 @@
+import os
+
+MAX_CPU_TIME_S    = 10
+MAX_WALL_TIME_S   = 30
+MAX_MEMORY_BYTES  = 256 * 1024 * 1024
+MAX_OUTPUT_BYTES  = 65_536
+MAX_PROCESSES     = 1
+MAX_FILE_HANDLES  = 16
+MAX_TEST_CASES    = 50
+SANDBOX_TEMP_ROOT = "/tmp/skillos_sandbox"
+DIFFICULTY_WEIGHTS = {"easy": 1.0, "medium": 1.5, "hard": 2.5}
+PERF_TIER_FAST    = 0.25
+PERF_TIER_SLOW    = 0.75
+
+os.makedirs(SANDBOX_TEMP_ROOT, exist_ok=True)

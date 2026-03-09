@@ -1,0 +1,49 @@
+# Render.com deployment
+services:
+  # Backend API
+  - type: web
+    name: skillos-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn skillos.api.fastapi_app:app -k uvicorn.workers.UvicornWorker -w 2 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: skillos-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: skillos-redis
+          type: redis
+          property: connectionString
+      - key: SKILLOS_SECRET_KEY
+        generateValue: true
+      - key: SKILLOS_ENV
+        value: production
+
+  # Celery Worker
+  - type: worker
+    name: skillos-worker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A skillos.worker_celery worker --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: skillos-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: skillos-redis
+          type: redis
+          property: connectionString
+
+databases:
+  - name: skillos-db
+    plan: free
+
+services:
+  - type: redis
+    name: skillos-redis
+    plan: free

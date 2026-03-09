@@ -1,0 +1,128 @@
+# SkillOS — Docker Compose
+# Full local development stack with isolated code execution
+#
+# Usage:
+#   Start everything:  docker-compose up
+#   Backend only:      docker-compose up backend
+#   With rebuild:      docker-compose up --build
+#
+# Services:
+#   backend     — FastAPI server (port 8000)
+#   frontend    — React/Vite dev server (port 5173)
+#   postgres    — PostgreSQL database (port 5432)
+#   redis       — Redis cache + job queue (port 6379)
+#   worker      — Celery evaluation worker
+#   sandbox     — Code execution sandbox (Docker-in-Docker)
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       skillos
+      POSTGRES_USER:     skillos
+      POSTGRES_PASSWORD: skillos_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      target: backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Database — connect to postgres service above
+      DATABASE_URL:        postgresql://skillos:skillos_dev_password@postgres:5432/skillos
+      REDIS_URL:           redis://redis:6379/0
+      SKILLOS_ENV:         development
+      SKILLOS_SECRET_KEY:  dev-secret-change-in-production-32chars
+      SKILLOS_USE_DOCKER:  "true"        # enable Docker sandbox
+      # AI keys — copy from your .env file
+      ANTHROPIC_API_KEY:   ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY:      ${GEMINI_API_KEY:-}
+      GROQ_API_KEY:        ${GROQ_API_KEY:-}
+      OPENAI_API_KEY:      ${OPENAI_API_KEY:-}
+      # Other optional keys
+      GITHUB_TOKEN:        ${GITHUB_TOKEN:-}
+      RAZORPAY_KEY_ID:     ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      SMTP_USER:           ${SMTP_USER:-}
+      SMTP_PASS:           ${SMTP_PASS:-}
+      GOOGLE_CLIENT_ID:    ${GOOGLE_CLIENT_ID:-}
+      ALLOWED_ORIGINS:     "http://localhost:5173,http://localhost:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker for sandbox
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn skillos.api.fastapi_app:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Celery Worker ───────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: .
+      target: backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL:       postgresql://skillos:skillos_dev_password@postgres:5432/skillos
+      REDIS_URL:          redis://redis:6379/0
+      SKILLOS_ENV:        development
+      SKILLOS_SECRET_KEY: dev-secret-change-in-production-32chars
+      SKILLOS_USE_DOCKER: "true"
+      ANTHROPIC_API_KEY:  ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY:     ${GEMINI_API_KEY:-}
+      GROQ_API_KEY:       ${GROQ_API_KEY:-}
+      OPENAI_API_KEY:     ${OPENAI_API_KEY:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker-in-Docker for sandbox
+    depends_on:
+      - redis
+      - postgres
+    command: celery -A skillos.worker_celery worker --loglevel=info --concurrency=4
+
+  # ── Frontend (React + Vite) ─────────────────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules    # don't mount host node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

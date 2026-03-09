@@ -1,0 +1,123 @@
+# SkillOS Setup Guide
+
+## 1. AI Coach (Anthropic / Claude)
+
+The AI Coach gives personalised skill analysis. Without a key it uses smart rule-based logic — still works, just not AI-powered.
+
+**To enable real AI:**
+
+1. Go to https://console.anthropic.com
+2. Sign up (free — no credit card needed for $5 free credits)
+3. Click "Get API Key" → Copy your key
+4. Set environment variable:
+   ```
+   ANTHROPIC_API_KEY=sk-ant-api03-xxxx
+   ```
+5. That's it. Each coaching report costs ~$0.001
+
+**What the AI does:**
+- Analyses your actual submission history, success rates, streaks
+- Identifies your specific weaknesses (e.g. "You fail 70% of graph problems")
+- Gives a personalised weekly study plan
+- Writes motivational messages based on your real data
+
+---
+
+## 2. Code Editor (Monaco + Multi-Language)
+
+The editor uses Monaco (VS Code's engine) — loaded automatically from CDN, no install needed.
+
+**Supported languages:**
+| Language   | Requires on server |
+|------------|-------------------|
+| Python 3   | `python3` (usually pre-installed) |
+| JavaScript | `node` — install from nodejs.org |
+| Java       | `javac` + `java` — install JDK 17+ |
+| C++        | `g++` — install via `apt install g++` |
+| C          | `gcc` — install via `apt install gcc` |
+| Go         | `go` — install from go.dev |
+
+**On Railway/Render free tier:** Python 3 works out of the box. For other languages, use a Dockerfile:
+```dockerfile
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y nodejs npm gcc g++ default-jdk
+# ... rest of Dockerfile
+```
+
+**Features:**
+- Syntax highlighting (all languages)
+- Autocomplete (keywords, snippets)
+- Bracket matching & colourisation
+- `▷ Run` button — tests against sample input only (fast, no scoring)
+- `✓ Submit` button — runs all test cases, updates your skill score
+
+---
+
+## 3. Razorpay Payments
+
+Used for recruiter subscriptions. In dev mode, payments are mocked (no real money).
+
+**To enable real payments:**
+
+1. Go to https://razorpay.com → Sign Up (free)
+2. Complete KYC (takes 1-2 business days for Indian accounts)
+3. Dashboard → Settings → API Keys → Generate Test Key
+4. Copy Key ID and Key Secret
+5. Set environment variables:
+   ```
+   RAZORPAY_KEY_ID=rzp_test_xxxx
+   RAZORPAY_KEY_SECRET=xxxx
+   ```
+6. For webhooks (to auto-activate subscriptions):
+   - Dashboard → Webhooks → Add new webhook
+   - URL: `https://yourdomain.com/payments/webhook`
+   - Events: `payment.captured`
+   - Copy the webhook secret → set `RAZORPAY_WEBHOOK_SECRET=xxxx`
+
+**Plans configured:**
+| Plan       | Price   | Recruiter Contacts |
+|------------|---------|-------------------|
+| Starter    | ₹2,999/mo | 10/month |
+| Growth     | ₹7,999/mo | 50/month |
+| Enterprise | ₹24,999/mo | Unlimited |
+
+**Test cards for Razorpay:**
+- Card: `4111 1111 1111 1111`, Any future expiry, CVV: `123`
+- UPI: `success@razorpay`
+
+---
+
+## Quick Start (Local)
+
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+cp ../.env.example .env   # Edit .env with your values
+python -m skillos.main
+
+# Frontend (in another terminal)
+cd frontend
+npm install
+npm run dev
+```
+
+Backend runs at http://localhost:8000
+Frontend runs at http://localhost:5173
+
+---
+
+## Free Deployment
+
+| Service | What For | Free Tier |
+|---------|----------|-----------|
+| **Render.com** | Backend hosting | 750 hrs/month free |
+| **Vercel** | Frontend hosting | Free forever |
+| **Neon.tech** | PostgreSQL (upgrade from SQLite) | 500MB free |
+| **Cloudflare** | CDN + HTTPS + DDoS | Free forever |
+| **Gmail** | Email sending | 500/day free |
+| **Razorpay** | Payments | Free (2% per txn) |
+| **Anthropic** | AI Coach | $5 free credits |
+| **Google Cloud** | Google Auth | Free forever |
+
+**Total monthly cost to start: ₹0**
