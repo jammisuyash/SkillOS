@@ -18,3 +18,4 @@ cd frontend && npm install && npm run dev
 Server: http://localhost:8000 | Frontend: http://localhost:5173
 
 See DOCS.md for full API reference, deployment guide, and environment variables.
+# SkillOS
