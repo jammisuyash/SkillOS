@@ -948,7 +948,8 @@ function AuthPage({ onAuth }) {
     setLoading(true); setError("");
     try {
       const path = mode === "login" ? "/auth/login" : "/auth/register";
-      const data = await api.post(path, form);
+      const payload = mode === 'register' ? { ...form, username: form.display_name } : form;
+      const data = await api.post(path, payload);
       if (data.token) onAuth(data.token, data.user);
       else setError("Invalid credentials — try again");
     } catch (e) { setError(e.message); }
