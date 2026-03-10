@@ -1462,7 +1462,7 @@ function Problems({ token, onToast }) {
               {result.passed_cases != null && !result.run_only && (
                 <div className="muted mono" style={{ fontSize: 12 }}>
                   {result.passed_cases}/{result.total_cases} test cases passed
-                  {result.max_runtime_ms ?  : ""}
+                  {result.max_runtime_ms ? `· ${result.max_runtime_ms}ms` : ""}
                 </div>
               )}
               {result.stdout_sample && (
