@@ -107,8 +107,8 @@ app = FastAPI(
 _ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_ORIGINS + ["*"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -248,8 +248,10 @@ def health():
 # ── Auth ──────────────────────────────────────────────────────────────────────
 @app.post("/auth/register", tags=["Auth"])
 def register(b: RegisterBody, req: Request):
-    from skillos.auth.service import register_user
-    return register_user(b.username, b.email, b.password, b.display_name, b.college)
+    from skillos.auth.service import register as register_user, create_token
+    user = register_user(b.email, b.password, b.display_name)
+    token = create_token(user["id"], user["email"], user["role"])
+    return {"token": token, "user": user}
 
 @app.post("/auth/login", tags=["Auth"])
 def login(b: LoginBody, req: Request):
@@ -349,8 +351,9 @@ def tasks(req: Request, u=Depends(_current_user)):
 
 @app.get("/daily", tags=["Problems"])
 def daily(u=Depends(_current_user)):
-    from skillos.contests.service import get_daily_challenge
-    return get_daily_challenge()
+    from skillos.db.database import fetchone
+    row = fetchone("SELECT * FROM tasks WHERE is_daily=1 ORDER BY created_at DESC LIMIT 1")
+    return row or {"message": "No daily challenge set yet"}
 
 
 # ── Skills ────────────────────────────────────────────────────────────────────
@@ -378,7 +381,7 @@ def skill_history(skill_id: str, u=Depends(_current_user)):
 # ── Profiles ──────────────────────────────────────────────────────────────────
 @app.get("/users/me/profile", tags=["Profiles"])
 def my_profile(u=Depends(_current_user)):
-    from skillos.profiles.service import get_my_profile
+    from skillos.profiles.service import get_profile as get_my_profile
     return get_my_profile(u["id"])
 
 @app.post("/users/me/profile", tags=["Profiles"])
@@ -917,12 +920,12 @@ async def _skillos_err(req: Request, exc: SkillOSError):
 
 @app.exception_handler(ValidationError)
 async def _val_err(req: Request, exc: ValidationError):
-    return JSONResponse(422, {"error": str(exc)})
+    return JSONResponse(status_code=422, content={"error": str(exc)})
 
 @app.exception_handler(Exception)
 async def _generic_err(req: Request, exc: Exception):
     import traceback; traceback.print_exc()
-    return JSONResponse(500, {"error": "Internal server error"})
+    return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 
 # ── Utility ───────────────────────────────────────────────────────────────────

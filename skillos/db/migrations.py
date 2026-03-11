@@ -316,6 +316,9 @@ def run_migrations():
         print(f"  apply {name}...")
         try:
             db.executescript(sql)
+        except Exception as e:
+            if "duplicate column" not in str(e).lower():
+                raise
             db.execute(
                 "INSERT INTO schema_migrations (name) VALUES (?)", (name,)
             )
