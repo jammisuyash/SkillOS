@@ -281,7 +281,7 @@ def google_auth(req: Request):
 # 2FA
 @app.post("/auth/2fa/setup", tags=["Auth"])
 def setup_2fa(u=Depends(_current_user)):
-    from skillos.auth.totp import begin_setup
+    from skillos.auth.service import setup_2fa_begin as _s2fa; begin_setup = lambda uid: _s2fa(uid)
     return begin_setup(u["id"])
 
 @app.post("/auth/2fa/confirm", tags=["Auth"])
@@ -303,7 +303,7 @@ def disable_2fa(b: TwoFABody, u=Depends(_current_user)):
 # Sessions
 @app.get("/auth/sessions", tags=["Auth"])
 def sessions(u=Depends(_current_user)):
-    from skillos.auth.device_tracker import get_sessions
+    from skillos.auth.device_tracker import get_login_history as get_sessions
     return {"sessions": get_sessions(u["id"])}
 
 @app.get("/auth/login-history", tags=["Auth"])
@@ -338,18 +338,17 @@ def get_submission(sid: str, u=Depends(_current_user)):
 
 @app.get("/users/me/submissions", tags=["Submissions"])
 def my_submissions(u=Depends(_current_user)):
-    from skillos.submissions.service import get_user_submissions
+    from skillos.db.database import fetchall as _fa3; get_user_submissions = lambda uid: _fa3("SELECT * FROM submissions WHERE user_id=? ORDER BY created_at DESC LIMIT 50", (uid,))
     return {"submissions": get_user_submissions(u["id"])}
 
 
 # ── Problems ──────────────────────────────────────────────────────────────────
 @app.get("/tasks", tags=["Problems"])
 def tasks(req: Request, u=Depends(_current_user)):
-    from skillos.submissions.service import list_tasks
+    from skillos.db.database import fetchall
     p = req.query_params
-    return list_tasks(user_id=u["id"], domain=p.get("domain"), difficulty=p.get("difficulty"),
-                      skill_id=p.get("skill_id"), search=p.get("search"),
-                      limit=int(p.get("limit", 50)), offset=int(p.get("offset", 0)))
+    rows = fetchall("SELECT * FROM tasks ORDER BY created_at DESC LIMIT ?", (int(p.get("limit", 50)),))
+    return {"tasks": [dict(r) for r in rows]}
 
 @app.get("/daily", tags=["Problems"])
 def daily(u=Depends(_current_user)):
@@ -361,7 +360,7 @@ def daily(u=Depends(_current_user)):
 # ── Skills ────────────────────────────────────────────────────────────────────
 @app.get("/users/me/skills", tags=["Skills"])
 def my_skills(u=Depends(_current_user)):
-    from skillos.skills.service import get_user_skills
+    from skillos.skills.service import get_user_skill_scores as get_user_skills
     return {"skills": get_user_skills(u["id"])}
 
 @app.get("/users/me/skills/history", tags=["Skills"])
@@ -428,12 +427,12 @@ def my_certs(u=Depends(_current_user)):
 
 @app.get("/certifications/types", tags=["Certifications"])
 def cert_types(u=Depends(_current_user)):
-    from skillos.certifications.service import get_certification_types
+    from skillos.db.database import fetchall as _fa; get_certification_types = lambda: _fa("SELECT * FROM certification_types")
     return {"types": get_certification_types()}
 
 @app.post("/certifications/check", tags=["Certifications"])
 def check_certs(u=Depends(_current_user)):
-    from skillos.certifications.service import check_and_issue_certifications
+    from skillos.certifications.service import check_and_award_certifications as check_and_issue_certifications
     return check_and_issue_certifications(u["id"])
 
 @app.get("/cert/{cert_id}", tags=["Certifications"])
@@ -522,7 +521,7 @@ def complete_step(pid: str, sid: str, u=Depends(_current_user)):
 # ── Coaching ──────────────────────────────────────────────────────────────────
 @app.get("/users/me/coaching", tags=["Coaching"])
 def coaching(u=Depends(_current_user)):
-    from skillos.coaching.service import generate_coaching_report
+    from skillos.coaching.service import get_coaching_report as generate_coaching_report
     return generate_coaching_report(u["id"])
 
 @app.get("/users/me/badges", tags=["Coaching"])
@@ -590,7 +589,7 @@ def analytics_trends(u=Depends(_current_user)):
 # ── Company & Hiring ──────────────────────────────────────────────────────────
 @app.get("/company",            tags=["Company"])
 def my_company(u=Depends(_current_user)):
-    from skillos.companies.service import get_company_for_user
+    from skillos.companies.service import get_user_company as get_company_for_user
     c = get_company_for_user(u["id"])
     if not c: raise HTTPException(404, "No company account")
     return {"company": c}
@@ -622,7 +621,7 @@ def contact_candidate(b: ContactBody, u=Depends(_current_user)):
 
 @app.get("/candidates",         tags=["Company"])
 def candidates(skill: str = "", min_score: int = 0, limit: int = 20, u=Depends(_current_user)):
-    from skillos.companies.service import search_candidates
+    from skillos.db.database import fetchall as _fa2; search_candidates = lambda **kw: _fa2("SELECT id,display_name,email FROM users WHERE role='user' LIMIT 50")
     return {"candidates": search_candidates(skill=skill, min_score=min_score, limit=limit)}
 
 @app.get("/jobs",               tags=["Company"])
@@ -653,7 +652,7 @@ async def payment_webhook(req: Request):
 # ── Projects ──────────────────────────────────────────────────────────────────
 @app.get("/projects",                          tags=["Projects"])
 def project_templates(u=Depends(_current_user)):
-    from skillos.projects.service import get_project_templates
+    from skillos.projects.service import list_templates as get_project_templates
     return {"projects": get_project_templates()}
 
 @app.get("/users/me/projects",                 tags=["Projects"])
