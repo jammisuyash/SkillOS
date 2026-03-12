@@ -127,6 +127,8 @@ def _current_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(_beare
     user = verify_token(creds.credentials)
     if not user:
         raise HTTPException(401, "Invalid or expired token")
+    if "id" not in user and "user_id" in user:
+        user["id"] = user["user_id"]
     return user
 
 def _optional_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)) -> Optional[dict]:
@@ -255,9 +257,9 @@ def register(b: RegisterBody, req: Request):
 
 @app.post("/auth/login", tags=["Auth"])
 def login(b: LoginBody, req: Request):
-    from skillos.auth.service import login_user
-    ip = req.client.host if req.client else "unknown"
-    ua = req.headers.get("User-Agent", "")
+    from skillos.auth.service import login as login_user
+    ip = (req.client.host if req.client else "unknown") or "unknown"
+    ua = req.headers.get("User-Agent", "") or ""
     return login_user(b.email, b.password, b.totp_code, ip, ua)
 
 @app.post("/auth/forgot-password", tags=["Auth"])

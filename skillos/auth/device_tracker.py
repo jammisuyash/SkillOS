@@ -70,7 +70,7 @@ def get_or_create_device_id(user_id: str, incoming_device_id: str | None,
                 (id, user_id, device_id, device_name, user_agent, ip_address, is_trusted)
             VALUES (?, ?, ?, ?, ?, ?, 0)
         """, (str(uuid.uuid4()), user_id, device_id, device_name,
-              user_agent[:512], ip[:64]))
+              ( user_agent or "" )[:512], (ip or "unknown")[:64]))
 
     return device_id, True
 
@@ -114,7 +114,7 @@ def record_login(user_id: str, ip: str, user_agent: str,
             INSERT INTO login_history
                 (id, user_id, ip_address, user_agent, device_id, status, fail_reason)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (str(uuid.uuid4()), user_id, ip[:64], user_agent[:512],
+        """, (str(uuid.uuid4()), user_id, (ip or "unknown")[:64], (user_agent or "")[:512],
               device_id, status, fail_reason))
 
 
@@ -160,7 +160,7 @@ def register_session(user_id: str, token: str, device_id: str | None,
                 (id, user_id, token_hash, device_id, ip_address, user_agent, expires_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (session_id, user_id, token_hash, device_id,
-              ip[:64], user_agent[:512], expires_at))
+              (ip or "unknown")[:64], (user_agent or "")[:512], expires_at))
     return session_id
 
 
