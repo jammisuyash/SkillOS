@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 // ─── MONACO EDITOR LOADER ────────────────────────────────────────────────────
 // Loads Monaco Editor (same editor as VS Code) from CDN — no install needed
