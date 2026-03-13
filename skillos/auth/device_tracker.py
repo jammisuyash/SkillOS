@@ -56,7 +56,7 @@ def get_or_create_device_id(user_id: str, incoming_device_id: str | None,
             with transaction(db):
                 db.execute(
                     "UPDATE user_devices SET last_seen=?, ip_address=? WHERE user_id=? AND device_id=?",
-                    (utcnow_iso(), ip[:64], user_id, incoming_device_id)
+                    (utcnow_iso(), (ip or "unknown")[:64], user_id, incoming_device_id)
                 )
             return incoming_device_id, False
 
@@ -271,7 +271,7 @@ def check_suspicious(user_id: str, ip: str, is_new_device: bool) -> list[str]:
 
     if recent_ips:
         known_prefixes = {r["ip_address"][:7] for r in recent_ips if r["ip_address"]}
-        current_prefix = ip[:7]
+        current_prefix = (ip or "")[:7]
         if current_prefix not in known_prefixes:
             reasons.append("new_ip_range")
 

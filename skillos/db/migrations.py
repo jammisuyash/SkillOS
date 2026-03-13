@@ -99,7 +99,9 @@ MIGRATIONS = [
         CREATE TABLE IF NOT EXISTS skills (
             id          TEXT PRIMARY KEY,
             name        TEXT UNIQUE NOT NULL,
-            description TEXT
+            description TEXT,
+            domain      TEXT NOT NULL DEFAULT 'general',
+            is_active   INTEGER NOT NULL DEFAULT 1
         );
 
         CREATE TABLE IF NOT EXISTS user_skill_scores (
@@ -126,6 +128,31 @@ MIGRATIONS = [
     #       Seeded here so the catalogue is available after any fresh migration.
     #       Add new skills here as the task library grows.
     # ─────────────────────────────────────────────────────────────────────
+
+
+
+    ("006_tasks_columns", """
+        ALTER TABLE tasks ADD COLUMN is_daily INTEGER DEFAULT 0;
+        ALTER TABLE tasks ADD COLUMN is_active INTEGER DEFAULT 1;
+    """),
+    ("005_user_profiles", """
+        CREATE TABLE IF NOT EXISTS user_profiles (
+            user_id TEXT PRIMARY KEY REFERENCES users(id),
+            bio TEXT,
+            avatar_url TEXT,
+            github_url TEXT,
+            linkedin_url TEXT,
+            website_url TEXT,
+            college TEXT,
+            graduation_year INTEGER,
+            created_at TEXT DEFAULT (datetime('now')),
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
+    """),
+    ("004_skills_columns", """
+        ALTER TABLE skills ADD COLUMN domain TEXT NOT NULL DEFAULT 'general';
+        ALTER TABLE skills ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1;
+    """),
     ("003_skills_catalogue", """
         INSERT OR IGNORE INTO skills (id, name, description) VALUES
             ('skill-python-001', 'Python Fundamentals',

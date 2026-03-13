@@ -338,7 +338,7 @@ def get_submission(sid: str, u=Depends(_current_user)):
 
 @app.get("/users/me/submissions", tags=["Submissions"])
 def my_submissions(u=Depends(_current_user)):
-    from skillos.db.database import fetchall as _fa3; get_user_submissions = lambda uid: _fa3("SELECT * FROM submissions WHERE user_id=? ORDER BY created_at DESC LIMIT 50", (uid,))
+    from skillos.db.database import fetchall as _fa3; get_user_submissions = lambda uid: _fa3("SELECT * FROM submissions WHERE user_id=? ORDER BY submitted_at DESC LIMIT 50", (uid,))
     return {"submissions": get_user_submissions(u["id"])}
 
 

@@ -61,7 +61,7 @@ def _gather_user_data(user_id: str) -> dict:
     # Recent submissions (last 30)
     recent_subs = fetchall("""
         SELECT t.title, t.difficulty, s.name AS skill_name,
-               sub.status, sub.runtime_ms, sub.submitted_at
+               sub.status, sub.max_runtime_ms, sub.submitted_at
         FROM submissions sub
         JOIN tasks t ON t.id = sub.task_id
         JOIN skills s ON s.id = t.skill_id
@@ -70,18 +70,12 @@ def _gather_user_data(user_id: str) -> dict:
     """, (user_id,))
 
     # Contest performance
-    contests = fetchall("""
-        SELECT c.title, cr.rank, cr.score, cr.problems_solved
-        FROM contest_submissions cr
-        JOIN contests c ON c.id = cr.contest_id
-        WHERE cr.user_id = ?
-        ORDER BY cr.submitted_at DESC LIMIT 5
-    """, (user_id,)) if _table_exists("contest_submissions") else []
+    contests = []
 
     # Streak / profile
     profile = fetchone("""
-        SELECT current_streak, longest_streak, total_problems_solved
-        FROM user_profiles WHERE user_id = ?
+        SELECT streak_current, streak_best, 0 AS total_problems_solved
+        FROM users WHERE id = ?
     """, (user_id,))
 
     # Compute per-skill stats
@@ -149,8 +143,8 @@ def _ai_coaching_report(data: dict) -> dict:
     if data.get("streak"):
         s = data["streak"]
         streak_info = (
-            f"Current streak: {s.get('current_streak', 0)} days. "
-            f"Longest streak: {s.get('longest_streak', 0)} days. "
+            f"Current streak: {s.get('streak_current', 0)} days. "
+            f"Longest streak: {s.get('streak_best', 0)} days. "
             f"Total problems solved: {s.get('total_problems_solved', 0)}."
         )
 
@@ -304,8 +298,8 @@ def _rule_based_report(data: dict) -> dict:
         if weak:
             insights.append(f"{weak[0]['name']} needs attention ({weak[0]['score']}/100) — targeted practice will help fast.")
         streak = data.get("streak", {})
-        if streak.get("current_streak", 0) >= 3:
-            insights.append(f"You're on a {streak['current_streak']}-day streak — keep it up!")
+        if streak.get("streak_current", 0) >= 3:
+            insights.append(f"You're on a {streak['streak_current']}-day streak — keep it up!")
 
     weaknesses = [{"skill_name": s["name"], "score": s["score"],
                    "reason": "low_score", "priority": "high"} for s in weak[:3]]
