@@ -1,23 +1,23 @@
+const CACHE_NAME = 'skillos-v3';
 
-const CACHE_NAME = "skillos-v3";
-const STATIC_ASSETS = ["/", "/index.html", "/manifest.json"];
-
-self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(STATIC_ASSETS)));
+self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(caches.keys().then(names => Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n)))));
-  self.clients.claim();
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => caches.delete(key)))
+    ).then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener("fetch", (e) => {
-  if (e.request.url.includes('pythonanywhere.com') || e.request.method !== 'GET') {
-    e.respondWith(fetch(e.request));
-    return;
-  }
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+  // Never intercept API calls or external resources
+  if (url.hostname !== 'skill-os-omega.vercel.app') return;
+  // Never intercept JS/CSS assets - always fetch fresh
+  if (url.pathname.startsWith('/assets/')) return;
+  // Pass through everything else
+  return;
 });
