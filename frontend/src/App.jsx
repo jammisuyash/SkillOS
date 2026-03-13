@@ -5066,13 +5066,13 @@ const SECTIONS = { platform: "Platform", compete: "Compete", build: "Build", me:
 
 export default function App() {
   const [token, saveToken, clearToken] = useToken();
-  const [user, setUser]   = useState(null);
+  const [user, setUser]   = useState(() => { try { return JSON.parse(localStorage.getItem("sk_user") || "null"); } catch { return null; } });
   const [page, setPage]   = useState("dashboard");
   const [toast, setToast] = useState(null);
 
-  function onAuth(t, u) { saveToken(t); setUser(u); }
+  function onAuth(t, u) { saveToken(t); setUser(u); localStorage.setItem("sk_user", JSON.stringify(u)); }
   function onToast(msg, type = "success") { setToast({ msg, type }); }
-  function logout() { clearToken(); setUser(null); }
+  function logout() { clearToken(); setUser(null); localStorage.removeItem("sk_user"); }
 
   if (!token) return (
     <>
