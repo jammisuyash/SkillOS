@@ -531,7 +531,8 @@ def coaching(u=Depends(_current_user)):
 
 @app.get("/users/me/badges", tags=["Coaching"])
 def badges(u=Depends(_current_user)):
-    rows = fetchall("SELECT * FROM user_certifications WHERE user_id=?", (u["id"],))
+    from skillos.db.database import fetchall as _fetchall
+    rows = _fetchall("SELECT * FROM user_certifications WHERE user_id=?", (u["id"],))
     return {"badges": [dict(r) for r in rows]}
 
 @app.get("/users/me/reputation", tags=["Coaching"])
