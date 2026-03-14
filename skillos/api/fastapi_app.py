@@ -347,7 +347,12 @@ def my_submissions(u=Depends(_current_user)):
 def tasks(req: Request, u=Depends(_current_user)):
     from skillos.db.database import fetchall
     p = req.query_params
-    rows = fetchall("SELECT * FROM tasks ORDER BY created_at DESC LIMIT ?", (int(p.get("limit", 50)),))
+    rows = fetchall("""
+        SELECT t.*, s.name AS skill_name, s.domain
+        FROM tasks t LEFT JOIN skills s ON s.id = t.skill_id
+        WHERE t.is_published=1
+        ORDER BY t.created_at DESC LIMIT ?
+    """, (int(p.get("limit", 200)),))
     return {"tasks": [dict(r) for r in rows]}
 
 @app.get("/daily", tags=["Problems"])
