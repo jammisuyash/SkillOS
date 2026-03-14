@@ -52,7 +52,7 @@ MIGRATIONS = [
             task_id          TEXT NOT NULL REFERENCES tasks(id),
             code             TEXT NOT NULL,
             language         TEXT NOT NULL DEFAULT 'python'
-                                 CHECK(language IN ('python')),
+                                 CHECK(language IN ('python','python3','javascript','java','cpp','c','go','rust','typescript')),
             status           TEXT NOT NULL DEFAULT 'pending'
                                  CHECK(status IN (
                                      'pending','accepted','wrong_answer',
@@ -131,6 +131,32 @@ MIGRATIONS = [
 
 
 
+
+    ("007_fix_submissions_language_constraint", """
+        CREATE TABLE IF NOT EXISTS submissions_new (
+            id               TEXT PRIMARY KEY,
+            user_id          TEXT NOT NULL,
+            task_id          TEXT NOT NULL,
+            code             TEXT NOT NULL,
+            language         TEXT NOT NULL DEFAULT 'python3',
+            status           TEXT NOT NULL DEFAULT 'pending',
+            passed_cases     INTEGER,
+            total_cases      INTEGER,
+            max_runtime_ms   INTEGER,
+            max_memory_kb    INTEGER,
+            performance_tier TEXT,
+            stdout_sample    TEXT,
+            stderr_sample    TEXT,
+            submitted_at     TEXT NOT NULL DEFAULT (datetime('now')),
+            evaluated_at     TEXT,
+            mcq_answer       INTEGER,
+            ai_feedback      TEXT,
+            ai_score         INTEGER,
+            proctoring_flags TEXT,
+            tab_switches     INTEGER NOT NULL DEFAULT 0,
+            time_spent_seconds INTEGER NOT NULL DEFAULT 0
+        );
+    """),
     ("006_tasks_columns", """
         ALTER TABLE tasks ADD COLUMN is_daily INTEGER DEFAULT 0;
         ALTER TABLE tasks ADD COLUMN is_active INTEGER DEFAULT 1;

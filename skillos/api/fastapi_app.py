@@ -161,6 +161,8 @@ class SubmitBody(BaseModel):
     task_id: str
     language: str
     code: str = Field(..., max_length=65536)
+    mcq_answer: Optional[int] = None
+    run_only: bool = False
 
 class DiscussionBody(BaseModel):
     title: str = Field(..., min_length=3, max_length=200)
@@ -326,7 +328,7 @@ def revoke_all(u=Depends(_current_user)):
 @app.post("/submit", tags=["Submissions"])
 def submit(b: SubmitBody, u=Depends(_current_user)):
     from skillos.submissions.service import create_submission
-    return create_submission(u["id"], b.task_id, b.language, b.code)
+    return create_submission(u["id"], b.task_id, b.code, b.language, getattr(b, "mcq_answer", None))
 
 @app.get("/submission/{sid}", tags=["Submissions"])
 def get_submission(sid: str, u=Depends(_current_user)):
