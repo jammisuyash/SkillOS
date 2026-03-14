@@ -1191,6 +1191,8 @@ function Problems({ token, onToast }) {
   const [search, setSearch]     = useState("");
   const [domain, setDomain]     = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [mcqAnswer, setMcqAnswer]   = useState(null);
+  const [sdAnswer, setSdAnswer]     = useState("");
 
   useEffect(() => {
     api.get("/tasks", token).then(d => setTasks(d.tasks || [])).catch(() => {});
@@ -1289,7 +1291,7 @@ function Problems({ token, onToast }) {
         <tbody>
           {filtered.map((t, i) => (
             <tr key={t.id} className="prob-row" onClick={() => {
-              setSelected(t); setResult(null);
+              setSelected(t); setResult(null); setMcqAnswer(null); setSdAnswer("");
               if (t.problem_type === "debugging" && t.starter_code_broken) {
                 setCode(t.starter_code_broken);
               } else if (t.starter_code) {
