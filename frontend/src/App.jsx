@@ -3994,9 +3994,12 @@ function SecuritySettings({ token, onToast }) {
             <div className="form-group">
               <label className="form-label">SCAN QR CODE</label>
               <div style={{ background: "white", padding: 12, borderRadius: 8, display: "inline-block", marginBottom: 12 }}>
-                <div className="muted" style={{ fontSize: 11, wordBreak: "break-all", fontFamily: "var(--font-mono)", maxWidth: 280 }}>
-                  {setupData.qr_uri}
-                </div>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(setupData.qr_uri)}`}
+                  alt="2FA QR Code"
+                  width={180} height={180}
+                  style={{ display: "block" }}
+                />
               </div>
               <div className="muted" style={{ fontSize: 12, marginBottom: 12 }}>
                 Or enter this secret manually in your app: <code style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}>{setupData.secret}</code>
