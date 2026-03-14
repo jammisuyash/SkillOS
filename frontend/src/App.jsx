@@ -5105,13 +5105,12 @@ export default function App() {
           </nav>
           <div className="sidebar-user">
             <div className="avatar">{(user?.display_name || "D")[0]}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: 13 }}>{user?.display_name || "Developer"}</div>
-              <div style={{ fontSize: 11, opacity: 0.5 }}>{user?.email || ""}</div>
+            <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+              <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.display_name || "Developer"}</div>
+              <div style={{ fontSize: 11, opacity: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.email || ""}</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={logout} title="Sign out" style={{ color: "#f87171", fontSize: 18 }}>⏻</button>
+            <button onClick={logout} title="Sign out" style={{ background: "none", border: "none", cursor: "pointer", color: "#f87171", fontSize: 16, padding: "4px 6px", borderRadius: 6, flexShrink: 0 }}>⏻</button>
           </div>
-          <button onClick={logout} style={{ margin: "8px 12px 12px", width: "calc(100% - 24px)", padding: "8px", background: "#3f1f1f", color: "#f87171", border: "1px solid #7f1d1d", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>⏻ Sign Out</button>
         </aside>
 
         <main className="main">
