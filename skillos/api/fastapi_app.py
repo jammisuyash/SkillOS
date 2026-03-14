@@ -526,8 +526,8 @@ def coaching(u=Depends(_current_user)):
 
 @app.get("/users/me/badges", tags=["Coaching"])
 def badges(u=Depends(_current_user)):
-    from skillos.reputation.service import get_user_badges
-    return {"badges": get_user_badges(u["id"])}
+    rows = fetchall("SELECT * FROM user_certifications WHERE user_id=?", (u["id"],))
+    return {"badges": [dict(r) for r in rows]}
 
 @app.get("/users/me/reputation", tags=["Coaching"])
 def reputation(u=Depends(_current_user)):
@@ -938,3 +938,15 @@ def _body(req: Request) -> dict:
         return json.loads(body_bytes) if body_bytes else {}
     except Exception:
         return {}
+
+@app.get("/github/profile", tags=["Profile"])
+def github_profile(u=Depends(_current_user)):
+    return {"github": None, "message": "GitHub integration coming soon"}
+
+@app.get("/portfolio/{username}", tags=["Profile"])
+def portfolio(username: str):
+    user = fetchone("SELECT id, display_name, bio, avatar_url FROM users WHERE username=?", (username,))
+    if not user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+    return dict(user)
