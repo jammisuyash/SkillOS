@@ -1202,7 +1202,7 @@ function Problems({ token, onToast }) {
       let attempts = 0;
       const poll = setInterval(async () => {
         attempts++;
-        const r = await api.get(`/submission/${sub.submission_id}`, token);
+        const r = await api.get(`/submission/${sub.id}`, token);
         if (r.status !== "pending" && r.status !== "running" || attempts > 20) {
           clearInterval(poll); setResult({ ...r, run_only: true }); setRunning(false);
         }
@@ -1218,7 +1218,7 @@ function Problems({ token, onToast }) {
       let attempts = 0;
       const poll = setInterval(async () => {
         attempts++;
-        const r = await api.get(`/submission/${sub.submission_id}`, token);
+        const r = await api.get(`/submission/${sub.id}`, token);
         if (r.status !== "pending" && r.status !== "running" || attempts > 20) {
           clearInterval(poll); setResult(r); setRunning(false);
           if (r.status === "accepted") onToast("✓ Accepted! Skill scores updated", "success");
@@ -1353,7 +1353,7 @@ function Problems({ token, onToast }) {
                   }, token);
                   let tries = 0;
                   const poll = setInterval(async () => {
-                    const r = await api.get(`/submission/${sub.submission_id}`, token);
+                    const r = await api.get(`/submission/${sub.id}`, token);
                     if (r.status !== "pending" || tries++ > 15) {
                       clearInterval(poll); setResult({ ...r, mcq_correct: selected.mcq_correct_index }); setRunning(false);
                     }
@@ -1420,7 +1420,7 @@ function Problems({ token, onToast }) {
                     }, token);
                     let tries = 0;
                     const poll = setInterval(async () => {
-                      const r = await api.get(`/submission/${sub.submission_id}`, token);
+                      const r = await api.get(`/submission/${sub.id}`, token);
                       if (r.status !== "pending" || tries++ > 30) {
                         clearInterval(poll); setResult(r); setRunning(false);
                         if (r.status === "accepted") onToast("✅ Design approved by AI!", "success");
