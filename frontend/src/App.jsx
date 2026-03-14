@@ -382,14 +382,7 @@ const css = `
     position: relative; overflow: hidden;
     transition: all .2s;
   }
-  .stat-card::after {
-    content: '';
-    position: absolute; top: -30px; right: -30px;
-    width: 80px; height: 80px; border-radius: 50%;
-    background: var(--accent); opacity: .05;
-    filter: blur(20px);
-    pointer-events: none;
-  }
+
   .stat-card:hover { border-color: rgba(123,94,167,.35); transform: translateY(-1px); }
   .stat-num {
     font-family: var(--font-disp);
