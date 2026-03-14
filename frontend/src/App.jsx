@@ -369,6 +369,7 @@ const css = `
     font-size: 30px; font-weight: 700; line-height: 1;
     background: linear-gradient(135deg, var(--text), var(--accent-h));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    color: var(--text);
   }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
 
