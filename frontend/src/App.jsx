@@ -1309,7 +1309,6 @@ function Problems({ token, onToast }) {
   // ── MCQ Solver ───────────────────────────────────────────────────────────
   if (selected.problem_type === "mcq") {
     const options = (() => { try { return JSON.parse(selected.mcq_options || "[]"); } catch { return []; } })();
-    const [mcqAnswer, setMcqAnswer] = useState(null);
 
     return (
       <div className="content fade-in">
