@@ -1380,7 +1380,6 @@ function Problems({ token, onToast }) {
 
   // ── System Design Solver ─────────────────────────────────────────────────
   if (selected.problem_type === "system_design") {
-    const [sdAnswer, setSdAnswer] = useState("");
     const wordCount = sdAnswer.trim().split(/\s+/).filter(Boolean).length;
 
     return (
