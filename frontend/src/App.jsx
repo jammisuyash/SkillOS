@@ -4343,21 +4343,7 @@ function AIReview({ token, onToast }) {
                 {code.split("\n").length} lines · {code.length} chars
               </span>
             </div>
-            <textarea className="editor-textarea" value={code}
-              onChange={e => setCode(e.target.value)}
-              style={{ minHeight: 400 }}
-              spellCheck={false}
-              placeholder="Paste your code here…"
-              onKeyDown={e => {
-                if (e.key === "Tab") {
-                  e.preventDefault();
-                  const s = e.target.selectionStart;
-                  const v = code.slice(0,s) + "    " + code.slice(s);
-                  setCode(v);
-                  setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s+4; }, 0);
-                }
-              }}
-            />
+            <MonacoEditor value={code} onChange={setCode} language={lang} height={400} />
           </div>
 
           {/* Feature list when no result */}
