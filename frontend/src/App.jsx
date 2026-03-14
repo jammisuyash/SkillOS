@@ -877,38 +877,7 @@ const css = `
     .card-grid.grid-4 { grid-template-columns: 1fr 1fr; }
   }
 
-  /* ── Mobile bottom nav ── */
-  @media (max-width: 768px) {
-    .app { flex-direction: column; }
-    .sidebar {
-      position: fixed; bottom: 0; left: 0; right: 0; top: auto;
-      width: 100%; height: auto;
-      flex-direction: row; padding: 0;
-      border-right: none; border-top: 1px solid var(--border);
-      overflow-x: auto; overflow-y: hidden;
-      z-index: 200;
-    }
-    .logo, .sidebar-user, .nav-section { display: none; }
-    .nav { flex-direction: row; padding: 0; gap: 0; overflow-x: auto; width: 100%; }
-    .nav > div { display: contents; }
-    .nav-item {
-      flex-direction: column; padding: 8px 12px; gap: 2px;
-      min-width: 64px; border-radius: 0; border-left: none;
-      border-top: 2px solid transparent; font-size: 9px;
-      white-space: nowrap;
-    }
-    .nav-item.active { border-top-color: var(--accent); border-left: none; background: rgba(124,106,247,.08); }
-    .nav-icon { font-size: 16px; }
-    .main { padding-bottom: 72px; }
-    .topbar { padding: 10px 16px; }
-    .content { padding: 16px; }
-    .card-grid.grid-2 { grid-template-columns: 1fr; }
-    .hero-bar { padding: 20px; }
-    .hero-bar h1 { font-size: 20px; }
-    .editor-wrap { font-size: 12px; }
-    .table { font-size: 11px; }
-    .table th, .table td { padding: 6px 8px; }
-  }
+
 
   /* ── PWA safe areas (iPhone notch etc.) ── */
   @supports (padding: max(0px)) {
