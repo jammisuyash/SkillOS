@@ -888,8 +888,10 @@ const css = `
       border-bottom: 1px solid var(--border); z-index: 300; height: 52px;
     }
     .hamburger {
-      background: none; border: none; color: var(--text); font-size: 22px;
+      display: flex !important; align-items: center; justify-content: center;
+      background: none; border: none; color: #ffffff; font-size: 26px;
       cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1;
+      min-width: 40px;
     }
     .mobile-logo { font-weight: 800; font-size: 16px; letter-spacing: 1px; color: var(--text); }
     .mobile-logo span { color: var(--accent-h); }
