@@ -996,7 +996,7 @@ function DiffPill({ difficulty }) {
 function StatCard({ num, label, accent }) {
   return (
     <div className="stat-card">
-      <div className="stat-num" style={{ color: accent || "var(--text)" }}>{num}</div>
+      <div style={{ fontSize: 30, fontWeight: 700, color: accent || "var(--text)", lineHeight: 1, marginBottom: 6 }}>{num ?? 0}</div>
       <div className="stat-label">{label}</div>
     </div>
   );
