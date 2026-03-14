@@ -5082,6 +5082,7 @@ export default function App() {
   const [token, saveToken, clearToken] = useToken();
   const [user, setUser]   = useState(() => { try { return JSON.parse(localStorage.getItem("sk_user") || "null"); } catch { return null; } });
   const [page, setPage]   = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   function onAuth(t, u) { saveToken(t); setUser(u); localStorage.setItem("sk_user", JSON.stringify(u)); }
@@ -5101,14 +5102,24 @@ export default function App() {
     <>
       <style>{css}</style>
       <div className="app">
-        <aside className="sidebar">
+        <div className="mobile-header">
+          <button className="hamburger" onClick={() => setSidebarOpen(true)}>☰</button>
+          <div className="mobile-logo">SKILL<span>OS</span></div>
+          <div className="flex gap-8 items-center">
+            <NotifBell token={token} />
+            <div className="dot dot-green" />
+          </div>
+        </div>
+        {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+        <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
+          <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>✕</button>
           <div className="logo"><div className="logo-icon">S</div><div><div>SKILL<span>OS</span></div><small className="logo-sub">ELITE PLATFORM</small></div></div>
           <nav className="nav">
             {sections.map(sec => (
               <div key={sec}>
                 <div className="nav-section">{SECTIONS[sec]}</div>
                 {NAV.filter(n => n.section === sec).map(n => (
-                  <div key={n.id} className={`nav-item ${page===n.id?"active":""}`} onClick={() => setPage(n.id)}>
+                  <div key={n.id} className={`nav-item ${page===n.id?"active":""}`} onClick={() => { setPage(n.id); setSidebarOpen(false); }}>
                     <span className="nav-icon">{n.icon}</span>
                     {n.label}
                   </div>
