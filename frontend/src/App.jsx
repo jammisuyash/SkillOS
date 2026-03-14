@@ -5142,7 +5142,7 @@ export default function App() {
       <style>{css}</style>
       <div className="app">
         <div className="mobile-header">
-          <button className="hamburger" onClick={() => setSidebarOpen(true)}>☰</button>
+          <button className="hamburger" onClick={() => setSidebarOpen(true)} style={{color:"#fff",fontSize:24,background:"none",border:"none",cursor:"pointer",padding:"4px 8px"}}>☰</button>
           <div className="mobile-logo">SKILL<span>OS</span></div>
           <div className="flex gap-8 items-center">
             <NotifBell token={token} />
