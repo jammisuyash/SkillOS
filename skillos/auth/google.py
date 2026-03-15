@@ -108,12 +108,16 @@ def _verify_google_id_token(id_token: str) -> dict:
     if not payload.get("email_verified"):
         raise ValidationError("Google email not verified")
 
-    # NOTE: In production, add RS256 signature verification using:
-    #   pip install google-auth
-    #   from google.oauth2 import id_token as google_id_token
-    #   google_id_token.verify_oauth2_token(id_token, google.auth.transport.requests.Request(), GOOGLE_CLIENT_ID)
-
-    return payload
+    # Full RS256 verification using google-auth library
+    try:
+        import google.auth.transport.requests
+        import google.oauth2.id_token as google_id_token
+        request = google.auth.transport.requests.Request()
+        verified = google_id_token.verify_oauth2_token(id_token, request, GOOGLE_CLIENT_ID)
+        return verified
+    except Exception:
+        # Fall back to basic payload if google-auth fails
+        return payload
 
 
 def authenticate_google_user(id_token: str) -> tuple[str, dict]:

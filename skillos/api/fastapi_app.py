@@ -283,9 +283,13 @@ def reset_password(b: ResetPasswordBody):
 
 @app.post("/auth/google", tags=["Auth"])
 def google_auth(req: Request):
-    from skillos.auth.google import verify_google_token
+    from skillos.auth.google import authenticate_google_user
     body = _body(req)
-    return verify_google_token(body.get("credential", ""), body.get("client_id", ""))
+    credential = body.get("credential", "")
+    if not credential:
+        raise HTTPException(400, "Missing credential")
+    token, user = authenticate_google_user(credential)
+    return {"token": token, "user": user}
 
 # 2FA
 @app.post("/auth/2fa/setup", tags=["Auth"])
