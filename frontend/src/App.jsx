@@ -2464,25 +2464,34 @@ function Profile({ token, onToast }) {
         <div>
           <div className="card mb-16" style={{ background: "linear-gradient(135deg, rgba(124,106,247,.1), var(--bg2))" }}>
             <div className="flex items-center gap-16 mb-16">
-              {/* Clickable avatar with upload */}
-              <div style={{ position:"relative", cursor:"pointer" }}
-                onClick={() => fileInputRef.current?.click()}
-                title="Click to change photo">
-                {avatarSrc ? (
-                  <img src={avatarSrc} alt="avatar"
-                    style={{ width:56, height:56, borderRadius:"50%", objectFit:"cover",
-                             border:"2px solid var(--accent)", display:"block" }}
-                    onError={() => setAvatarSrc(null)}/>
-                ) : (
-                  <div className="avatar" style={{ width:56, height:56, fontSize:22 }}>
-                    {(profile.display_name||"?")[0]}
+              {/* Instagram-style avatar with upload */}
+              <div style={{ position:"relative" }}>
+                <div style={{ width:90, height:90, borderRadius:"50%", 
+                              background:"linear-gradient(135deg,#c792ea,#82aaff)",
+                              padding:3, cursor:"pointer" }}
+                  onClick={() => fileInputRef.current?.click()}>
+                  <div style={{ width:"100%", height:"100%", borderRadius:"50%", overflow:"hidden", background:"var(--bg2)" }}>
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt="avatar"
+                        style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+                        onError={() => setAvatarSrc(null)}/>
+                    ) : (
+                      <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center",
+                                    justifyContent:"center", fontSize:32, fontWeight:800,
+                                    background:"linear-gradient(135deg,#7b5ea7,#3b82f6)", color:"white" }}>
+                        {(profile.display_name||"?")[0].toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                )}
-                <div style={{ position:"absolute", bottom:0, right:0,
-                              background:"var(--accent)", borderRadius:"50%",
-                              width:18, height:18, display:"flex", alignItems:"center",
-                              justifyContent:"center", fontSize:10, color:"white" }}>
-                  {uploadingPhoto ? "…" : "📷"}
+                </div>
+                {/* Camera overlay on hover */}
+                <div onClick={() => fileInputRef.current?.click()}
+                  style={{ position:"absolute", bottom:0, right:0,
+                            background:"var(--accent)", borderRadius:"50%",
+                            width:26, height:26, display:"flex", alignItems:"center",
+                            justifyContent:"center", fontSize:13, cursor:"pointer",
+                            border:"2px solid var(--bg2)", boxShadow:"0 2px 8px rgba(0,0,0,.3)" }}>
+                  {uploadingPhoto ? "⏳" : "📷"}
                 </div>
               </div>
               <input ref={fileInputRef} type="file" accept="image/*"
