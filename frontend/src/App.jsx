@@ -4350,6 +4350,40 @@ function Referrals({ token, onToast }) {
 }
 
 // ─── NOTIFICATIONS BELL ───────────────────────────────────────────────────────
+function EmailVerifyBanner({ token, onToast }) {
+  const [sent, setSent] = React.useState(false);
+  const [dismissed, setDismissed] = React.useState(
+    localStorage.getItem("verify_dismissed") === "1"
+  );
+  if (dismissed) return null;
+  return (
+    <div style={{ background: "linear-gradient(90deg,rgba(245,158,11,.15),rgba(245,158,11,.05))",
+                  borderBottom: "1px solid rgba(245,158,11,.3)", padding: "8px 20px",
+                  display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
+      <span style={{ fontSize: 16 }}>⚠️</span>
+      <span style={{ flex: 1, color: "var(--gold)" }}>
+        Please verify your email address to unlock all features.
+      </span>
+      {sent ? (
+        <span style={{ color: "var(--accent2)", fontWeight: 600 }}>✅ Email sent! Check your inbox.</span>
+      ) : (
+        <button onClick={async () => {
+          try {
+            await api.post("/auth/send-verification", {}, token);
+            setSent(true);
+          } catch(e) { onToast(e.message, "error"); }
+        }} style={{ background: "rgba(245,158,11,.2)", border: "1px solid rgba(245,158,11,.4)",
+                    color: "#f59e0b", padding: "4px 12px", borderRadius: 6, cursor: "pointer",
+                    fontSize: 12, fontWeight: 600 }}>
+          Send Verification Email
+        </button>
+      )}
+      <button onClick={() => { setDismissed(true); localStorage.setItem("verify_dismissed","1"); }}
+        style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 16 }}>✕</button>
+    </div>
+  );
+}
+
 function NotifBell({ token }) {
   const [notifs, setNotifs] = useState([]);
   const [open, setOpen]     = useState(false);
@@ -5345,6 +5379,9 @@ export default function App() {
               <span className="muted" style={{ fontSize: 12 }}>Connected</span>
             </div>
           </div>
+          {user && !user.email_verified && (
+            <EmailVerifyBanner token={token} onToast={onToast} />
+          )}
 
           {page === "dashboard"   && <Dashboard       token={token} user={user} />}
           {page === "problems"    && <Problems        token={token} onToast={onToast} />}
