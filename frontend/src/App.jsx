@@ -998,6 +998,38 @@ function StatCard({ num, label, accent }) {
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
+function GoogleSignIn({ onAuth }) {
+  const CLIENT_ID = "1077225566789-i7najrcfvl2q83965lj2tokctvqlp1qq.apps.googleusercontent.com";
+  
+  React.useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      window.google?.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: async (response) => {
+          try {
+            const data = await api.post("/auth/google", { 
+              credential: response.credential,
+              client_id: CLIENT_ID
+            });
+            if (data.token) onAuth(data.token, data.user);
+          } catch(e) { console.error("Google auth error:", e); }
+        }
+      });
+      window.google?.accounts.id.renderButton(
+        document.getElementById("google-btn"),
+        { theme: "filled_black", size: "large", width: 320, text: "continue_with" }
+      );
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  return <div id="google-btn" style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}></div>;
+}
+
 function AuthPage({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [forgotSent, setForgotSent] = useState(false);
@@ -1024,6 +1056,16 @@ function AuthPage({ onAuth }) {
         <div className="auth-sub">
           {mode === "login" ? "Sign in to your account" : mode === "forgot" ? "Reset your password" : "Create your free account"}
         </div>
+        {mode !== "forgot" && (
+          <>
+                <GoogleSignIn onAuth={onAuth} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "12px 0" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <span className="muted" style={{ fontSize: 12 }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            </div>
+          </>
+        )}
         {mode === "register" && (
           <div className="form-group">
             <label className="form-label">DISPLAY NAME</label>
