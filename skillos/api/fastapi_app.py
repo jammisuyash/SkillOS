@@ -26,12 +26,24 @@ DEPLOY (Railway / Render):
 from __future__ import annotations
 import os, json, uuid, threading
 
-# Load .env file
+# Load .env file - MUST happen before any other skillos imports
 try:
     from dotenv import load_dotenv
-    load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
-except ImportError:
+    load_dotenv('/home/jammisuyash/SkillOS/.env', override=True)
+except Exception:
     pass
+
+# Also set critical env vars directly if not set
+import os
+if not os.environ.get('GROQ_API_KEY'):
+    try:
+        for line in open('/home/jammisuyash/SkillOS/.env'):
+            line = line.strip()
+            if '=' in line and not line.startswith('#'):
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+    except Exception:
+        pass
 
 # Rate limiting
 try:
@@ -1041,3 +1053,13 @@ def get_avatar(user_id: str):
     if not user or not user["avatar_url"]:
         raise HTTPException(404, "No avatar")
     return {"avatar_url": user["avatar_url"]}
+
+@app.get("/debug/env", tags=["Debug"])
+def debug_env():
+    import os
+    return {
+        "groq": "SET" if os.environ.get("GROQ_API_KEY") else "MISSING",
+        "gemini": "SET" if os.environ.get("GEMINI_API_KEY") else "MISSING",
+        "smtp": os.environ.get("SMTP_USER", "MISSING"),
+        "env": os.environ.get("SKILLOS_ENV", "MISSING"),
+    }

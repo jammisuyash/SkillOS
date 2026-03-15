@@ -26,11 +26,20 @@ try:
 except ImportError:
     pass
 
+def _get_ai_config():
+    ak = os.environ.get("ANTHROPIC_API_KEY", "")
+    gk = os.environ.get("GROQ_API_KEY", "")
+    mk = os.environ.get("GEMINI_API_KEY", "")
+    # PythonAnywhere allows Google APIs - prefer Gemini, then Anthropic, then Groq
+    provider = "gemini" if mk else "anthropic" if ak else "groq" if gk else None
+    return provider, ak, gk, mk
+
+# Legacy compat
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 GROQ_API_KEY      = os.environ.get("GROQ_API_KEY", "")
 GEMINI_API_KEY    = os.environ.get("GEMINI_API_KEY", "")
-_USE_AI = bool(ANTHROPIC_API_KEY or GROQ_API_KEY or GEMINI_API_KEY)
-_AI_PROVIDER = "anthropic" if ANTHROPIC_API_KEY else "groq" if GROQ_API_KEY else "gemini" if GEMINI_API_KEY else None
+_USE_AI = True  # Always try AI, _get_ai_config() checks at runtime
+_AI_PROVIDER = None  # Determined at runtime
 
 
 # ── Main entry point ─────────────────────────────────────────────────────────
@@ -39,12 +48,13 @@ def get_coaching_report(user_id: str) -> dict:
     """Full AI-powered coaching report. Falls back to rule-based if no key."""
     data = _gather_user_data(user_id)
 
-    if _USE_AI:
+    provider, anthropic_key, groq_key, gemini_key = _get_ai_config()
+    use_ai = bool(provider)
+    if use_ai:
         try:
-            return _ai_coaching_report(data)
+            return _ai_coaching_report(data, provider, anthropic_key, groq_key, gemini_key)
         except Exception as e:
-            # Never crash — fall back to rule-based
-            pass
+            pass  # Fall back to rule-based
 
     return _rule_based_report(data)
 
@@ -123,7 +133,9 @@ def _table_exists(table: str) -> bool:
 
 # ── AI-powered report ─────────────────────────────────────────────────────────
 
-def _ai_coaching_report(data: dict) -> dict:
+def _ai_coaching_report(data: dict, _AI_PROVIDER=None, ANTHROPIC_API_KEY="", GROQ_API_KEY="", GEMINI_API_KEY="") -> dict:
+    if not _AI_PROVIDER:
+        _AI_PROVIDER, ANTHROPIC_API_KEY, GROQ_API_KEY, GEMINI_API_KEY = _get_ai_config()
     """Call Claude API to generate personalised coaching report."""
 
     # Build a rich context summary for the AI
