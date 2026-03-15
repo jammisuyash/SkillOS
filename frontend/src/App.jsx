@@ -5309,6 +5309,17 @@ export default function App() {
   // Handle reset password link
   const urlParams = new URLSearchParams(window.location.search);
   const resetToken = urlParams.get("token");
+  
+  // Show email verified toast
+  React.useEffect(() => {
+    if (urlParams.get("verified") === "1") {
+      onToast("✅ Email verified successfully!", "success");
+      // Update user state
+      setUser(u => u ? { ...u, email_verified: true } : u);
+      // Clean URL
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
   if (resetToken && !token) return (
     <>
       <style>{css}</style>
