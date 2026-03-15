@@ -18,8 +18,19 @@ import os, json, urllib.request, urllib.error
 from skillos.db.database import fetchone, fetchall
 from skillos.shared.utils import utcnow_iso
 
+# Load .env
+try:
+    from dotenv import load_dotenv
+    import pathlib
+    load_dotenv(pathlib.Path(__file__).parent.parent.parent / '.env')
+except ImportError:
+    pass
+
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-_USE_AI = bool(ANTHROPIC_API_KEY)
+GROQ_API_KEY      = os.environ.get("GROQ_API_KEY", "")
+GEMINI_API_KEY    = os.environ.get("GEMINI_API_KEY", "")
+_USE_AI = bool(ANTHROPIC_API_KEY or GROQ_API_KEY or GEMINI_API_KEY)
+_AI_PROVIDER = "anthropic" if ANTHROPIC_API_KEY else "groq" if GROQ_API_KEY else "gemini" if GEMINI_API_KEY else None
 
 
 # ── Main entry point ─────────────────────────────────────────────────────────
