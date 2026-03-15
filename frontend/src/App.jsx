@@ -1000,6 +1000,7 @@ function StatCard({ num, label, accent }) {
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 function AuthPage({ onAuth }) {
   const [mode, setMode] = useState("login");
+  const [forgotSent, setForgotSent] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", display_name: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -1021,7 +1022,7 @@ function AuthPage({ onAuth }) {
       <div className="auth-card fade-in">
         <div className="auth-logo">SKILL<span>OS</span></div>
         <div className="auth-sub">
-          {mode === "login" ? "Sign in to your account" : "Create your free account"}
+          {mode === "login" ? "Sign in to your account" : mode === "forgot" ? "Reset your password" : "Create your free account"}
         </div>
         {mode === "register" && (
           <div className="form-group">
@@ -1038,24 +1039,60 @@ function AuthPage({ onAuth }) {
             onChange={e => setForm({ ...form, email: e.target.value })}
             onKeyDown={e => e.key === "Enter" && submit()} />
         </div>
-        <div className="form-group">
-          <label className="form-label">PASSWORD</label>
-          <input className="input" type="password" placeholder="••••••••"
-            value={form.password}
-            onChange={e => setForm({ ...form, password: e.target.value })}
-            onKeyDown={e => e.key === "Enter" && submit()} />
-        </div>
+        {mode !== "forgot" && (
+          <div className="form-group">
+            <label className="form-label">PASSWORD</label>
+            <input className="input" type="password" placeholder="••••••••"
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              onKeyDown={e => e.key === "Enter" && submit()} />
+          </div>
+        )}
         {error && <div style={{ color: "var(--accent3)", fontSize: 13, marginBottom: 12 }}>{error}</div>}
-        <button className="btn btn-primary w-full" onClick={submit} disabled={loading}>
-          {loading ? <Spinner /> : (mode === "login" ? "Sign In" : "Create Account")}
-        </button>
-        <div style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "var(--muted)" }}>
-          {mode === "login" ? "No account?" : "Already registered?"}
-          <span style={{ color: "var(--accent)", cursor: "pointer", marginLeft: 6 }}
-            onClick={() => setMode(mode === "login" ? "register" : "login")}>
-            {mode === "login" ? "Sign up free" : "Sign in"}
-          </span>
-        </div>
+        {mode === "forgot" ? (
+          forgotSent ? (
+            <div style={{ textAlign: "center", padding: 16 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📧</div>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Check your email!</div>
+              <div className="muted" style={{ fontSize: 13 }}>We sent a reset link to {form.email}</div>
+              <button className="btn btn-ghost mt-16" onClick={() => { setMode("login"); setForgotSent(false); }}>← Back to login</button>
+            </div>
+          ) : (
+            <>
+              <button className="btn btn-primary w-full" onClick={async () => {
+                setLoading(true); setError("");
+                try {
+                  await api.post("/auth/forgot-password", { email: form.email });
+                  setForgotSent(true);
+                } catch(e) { setError(e.message); }
+                finally { setLoading(false); }
+              }} disabled={loading}>
+                {loading ? <Spinner /> : "Send Reset Link"}
+              </button>
+              <div style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
+                <span style={{ color: "var(--accent)", cursor: "pointer" }} onClick={() => setMode("login")}>← Back to login</span>
+              </div>
+            </>
+          )
+        ) : (
+          <>
+            <button className="btn btn-primary w-full" onClick={submit} disabled={loading}>
+              {loading ? <Spinner /> : (mode === "login" ? "Sign In" : "Create Account")}
+            </button>
+            {mode === "login" && (
+              <div style={{ textAlign: "center", marginTop: 8, fontSize: 13 }}>
+                <span style={{ color: "var(--accent)", cursor: "pointer" }} onClick={() => setMode("forgot")}>Forgot password?</span>
+              </div>
+            )}
+            <div style={{ textAlign: "center", marginTop: 12, fontSize: 13, color: "var(--muted)" }}>
+              {mode === "login" ? "No account?" : "Already registered?"}
+              <span style={{ color: "var(--accent)", cursor: "pointer", marginLeft: 6 }}
+                onClick={() => setMode(mode === "login" ? "register" : "login")}>
+                {mode === "login" ? "Sign up free" : "Sign in"}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
