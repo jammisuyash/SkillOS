@@ -5150,6 +5150,60 @@ const NAV = [
 ];
 const SECTIONS = { platform: "Platform", compete: "Compete", build: "Build", me: "Account" };
 
+function ResetPasswordPage({ resetToken, onDone }) {
+  const [password, setPassword] = React.useState("");
+  const [confirm, setConfirm] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [done, setDone] = React.useState(false);
+
+  async function submit() {
+    if (password !== confirm) { setError("Passwords don't match"); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
+    setLoading(true); setError("");
+    try {
+      await api.post("/auth/reset-password", { token: resetToken, new_password: password });
+      setDone(true);
+    } catch(e) { setError(e.message); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card fade-in">
+        <div className="auth-logo">SKILL<span>OS</span></div>
+        {done ? (
+          <div style={{ textAlign: "center", padding: 16 }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Password reset!</div>
+            <div className="muted" style={{ fontSize: 13, marginBottom: 16 }}>You can now sign in with your new password.</div>
+            <button className="btn btn-primary" onClick={onDone}>Go to Login</button>
+          </div>
+        ) : (
+          <>
+            <div className="auth-sub">Set your new password</div>
+            <div className="form-group">
+              <label className="form-label">NEW PASSWORD</label>
+              <input className="input" type="password" placeholder="Min 8 characters"
+                value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">CONFIRM PASSWORD</label>
+              <input className="input" type="password" placeholder="Repeat password"
+                value={confirm} onChange={e => setConfirm(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && submit()} />
+            </div>
+            {error && <div style={{ color: "var(--accent3)", fontSize: 13, marginBottom: 12 }}>{error}</div>}
+            <button className="btn btn-primary w-full" onClick={submit} disabled={loading}>
+              {loading ? <Spinner /> : "Reset Password"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [token, saveToken, clearToken] = useToken();
   const [user, setUser]   = useState(() => { try { return JSON.parse(localStorage.getItem("sk_user") || "null"); } catch { return null; } });
@@ -5160,6 +5214,16 @@ export default function App() {
   function onAuth(t, u) { saveToken(t); setUser(u); localStorage.setItem("sk_user", JSON.stringify(u)); }
   function onToast(msg, type = "success") { setToast({ msg, type }); }
   function logout() { clearToken(); setUser(null); localStorage.removeItem("sk_user"); }
+
+  // Handle reset password link
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get("token");
+  if (resetToken && !token) return (
+    <>
+      <style>{css}</style>
+      <ResetPasswordPage resetToken={resetToken} onDone={() => window.location.href = "/"} />
+    </>
+  );
 
   if (!token) return (
     <>
