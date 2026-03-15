@@ -970,15 +970,21 @@ function Empty({ icon = "📭", msg = "Nothing here yet" }) {
   return <div className="empty-state"><div className="icon">{icon}</div><div>{msg}</div></div>;
 }
 
-function SkillBar({ score, name }) {
+function SkillBar({ score, name, rank }) {
+  const s = Math.round(score || 0);
+  const color = s >= 80 ? "#22c55e" : s >= 60 ? "#3b82f6" : s >= 40 ? "#f59e0b" : s >= 20 ? "#f97316" : "#ef4444";
+  const level = s >= 80 ? "Expert" : s >= 60 ? "Advanced" : s >= 40 ? "Intermediate" : s >= 20 ? "Beginner" : "Novice";
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div className="flex justify-between items-center">
-        <span style={{ fontSize: 12, fontWeight: 600 }}>{name}</span>
-        <span style={{ fontSize: 12, color: "var(--accent)", fontFamily: "var(--mono)" }}>{Math.round(score)}</span>
+    <div style={{ marginBottom: 14 }}>
+      <div className="flex justify-between items-center mb-4">
+        <span style={{ fontSize: 13, fontWeight: 600 }}>{name}</span>
+        <div className="flex items-center gap-8">
+          <span style={{ fontSize: 10, color, fontWeight: 700, background: color+"22", padding: "2px 8px", borderRadius: 20 }}>{level}</span>
+          <span style={{ fontSize: 13, color, fontFamily: "var(--mono)", fontWeight: 700 }}>{s}</span>
+        </div>
       </div>
-      <div className="skill-bar">
-        <div className="skill-bar-fill" style={{ width: `${Math.min(score, 100)}%` }} />
+      <div style={{ height: 6, background: "var(--bg3)", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ width: `${Math.min(s, 100)}%`, height: "100%", background: `linear-gradient(90deg, ${color}99, ${color})`, borderRadius: 10, transition: "width 1s ease" }} />
       </div>
     </div>
   );
