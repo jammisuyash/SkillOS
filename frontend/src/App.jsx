@@ -5321,7 +5321,13 @@ export default function App() {
             ))}
           </nav>
           <div className="sidebar-user">
-            <div className="avatar">{(user?.display_name || "D")[0]}</div>
+            <div style={{ width:32, height:32, borderRadius:"50%", overflow:"hidden", flexShrink:0,
+                          background:"linear-gradient(135deg,#7b5ea7,#3b82f6)", display:"flex",
+                          alignItems:"center", justifyContent:"center", color:"white", fontWeight:700 }}>
+              {user?.avatar_url
+                ? <img src={user.avatar_url} style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={e => e.target.style.display="none"} />
+                : (user?.display_name || "D")[0].toUpperCase()}
+            </div>
             <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.display_name || "Developer"}</div>
               <div style={{ fontSize: 11, opacity: 0.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.email || ""}</div>
