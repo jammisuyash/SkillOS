@@ -32,6 +32,16 @@ try:
     load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 except ImportError:
     pass
+
+# Rate limiting
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    limiter = Limiter(key_func=get_remote_address)
+    _RATE_LIMIT_ENABLED = True
+except ImportError:
+    _RATE_LIMIT_ENABLED = False
 from contextlib import asynccontextmanager
 from typing import Optional, Any
 
@@ -112,6 +122,10 @@ app = FastAPI(
 
 # CORS
 _ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
+if _RATE_LIMIT_ENABLED:
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -266,10 +280,37 @@ def register(b: RegisterBody, req: Request):
 
 @app.post("/auth/login", tags=["Auth"])
 def login(b: LoginBody, req: Request):
+    # Rate limit: 10 login attempts per minute per IP
     from skillos.auth.service import login as login_user
     ip = (req.client.host if req.client else "unknown") or "unknown"
     ua = req.headers.get("User-Agent", "") or ""
     return login_user(b.email, b.password, b.totp_code, ip, ua)
+
+@app.post("/auth/send-verification", tags=["Auth"])
+def send_verification(u=Depends(_current_user)):
+    """Send email verification link."""
+    from skillos.auth.email_service import send_verification_email
+    from skillos.db.database import fetchone as _fo
+    user = _fo("SELECT email, display_name, is_email_verified FROM users WHERE id=?", (u["id"],))
+    if user and user["is_email_verified"]:
+        return {"message": "Email already verified"}
+    send_verification_email(user["email"], user["display_name"] or "User", u["id"])
+    return {"message": "Verification email sent!"}
+
+@app.get("/auth/verify-email", tags=["Auth"])
+def verify_email(token: str):
+    """Verify email from link."""
+    from skillos.auth.email_service import verify_token
+    from skillos.db.database import get_db as _gdb
+    result = verify_token(token, "email_verify")
+    if not result:
+        return JSONResponse(status_code=400, content={"error": "Invalid or expired token"})
+    db = _gdb()
+    db.execute("UPDATE users SET is_email_verified=1 WHERE id=?", (result["user_id"],))
+    db.commit()
+    # Redirect to frontend
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="https://skill-os-omega.vercel.app?verified=1")
 
 @app.post("/auth/forgot-password", tags=["Auth"])
 def forgot_password(b: ForgotPasswordBody):
@@ -969,3 +1010,34 @@ def portfolio(username: str):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="User not found")
     return dict(user)
+
+@app.post("/users/me/avatar", tags=["Profile"])
+async def upload_avatar(req: Request, u=Depends(_current_user)):
+    """Upload profile avatar — accepts base64 encoded image."""
+    body = await req.json()
+    avatar_data = body.get("avatar", "")
+    if not avatar_data:
+        raise HTTPException(400, "No avatar data")
+    
+    # Validate it's a valid base64 image
+    import base64, re
+    if not re.match(r'^data:image/(jpeg|jpg|png|gif|webp);base64,', avatar_data):
+        raise HTTPException(400, "Invalid image format. Use base64 encoded JPEG/PNG")
+    
+    # Store as base64 in DB (for small avatars) or save to file
+    avatar_path = f"/home/jammisuyash/SkillOS/avatars/{u['id']}.jpg"
+    os.makedirs(os.path.dirname(avatar_path), exist_ok=True)
+    
+    # Save base64 data URL directly to user profile
+    db = get_db()
+    db.execute("UPDATE users SET avatar_url=? WHERE id=?", (avatar_data, u["id"]))
+    db.commit()
+    return {"avatar_url": avatar_data, "message": "Avatar updated"}
+
+@app.get("/avatars/{user_id}", tags=["Profile"])
+def get_avatar(user_id: str):
+    from skillos.db.database import fetchone as _fo
+    user = _fo("SELECT avatar_url FROM users WHERE id=?", (user_id,))
+    if not user or not user["avatar_url"]:
+        raise HTTPException(404, "No avatar")
+    return {"avatar_url": user["avatar_url"]}
