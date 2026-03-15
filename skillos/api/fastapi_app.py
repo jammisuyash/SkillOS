@@ -25,6 +25,13 @@ DEPLOY (Railway / Render):
 
 from __future__ import annotations
 import os, json, uuid, threading
+
+# Load .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
+except ImportError:
+    pass
 from contextlib import asynccontextmanager
 from typing import Optional, Any
 

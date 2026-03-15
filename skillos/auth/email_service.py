@@ -24,17 +24,26 @@ from skillos.db.database import fetchone, transaction
 from skillos.shared.utils import utcnow, utcnow_iso
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SMTP_HOST    = os.environ.get("SMTP_HOST", "")
+# Load .env if not already loaded
+try:
+    from dotenv import load_dotenv
+    import pathlib
+    _env_path = pathlib.Path(__file__).parent.parent.parent / '.env'
+    load_dotenv(_env_path)
+except ImportError:
+    pass
+
+SMTP_HOST    = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT    = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER    = os.environ.get("SMTP_USER", "")
 SMTP_PASS    = os.environ.get("SMTP_PASS", "")
-FROM_EMAIL   = os.environ.get("FROM_EMAIL", "noreply@skillos.io")
-APP_URL      = os.environ.get("APP_URL", "http://localhost:3000")
+FROM_EMAIL   = os.environ.get("FROM_EMAIL", os.environ.get("SMTP_USER", "noreply@skillos.io"))
+APP_URL      = os.environ.get("APP_URL", "https://skill-os-omega.vercel.app")
 
 TOKEN_EXPIRY_MINUTES = 60  # 1 hour for both email verify and password reset
 DEV_EMAIL_DIR = Path(os.environ.get("TEMP", "/tmp")) / "skillos_emails"
 
-_IS_DEV = os.environ.get("SKILLOS_ENV", "development") == "development"
+_IS_DEV = os.environ.get("SKILLOS_ENV", "development") == "development" and not os.environ.get("SMTP_HOST")
 
 
 # ── Token generation + storage ────────────────────────────────────────────────

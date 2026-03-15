@@ -502,3 +502,16 @@ def reset_password(raw_token: str, new_password: str) -> dict:
     from skillos.auth.device_tracker import revoke_all_sessions
     revoke_all_sessions(result["user_id"])
     return result
+
+
+def forgot_password(email: str) -> dict:
+    """Send password reset email."""
+    from skillos.db.database import fetchone
+    from skillos.auth.email_service import send_password_reset_email, create_password_reset_token
+    user = fetchone("SELECT id, email, display_name FROM users WHERE email=?", (email,))
+    if not user:
+        # Don't reveal if email exists
+        return {"message": "If that email exists, a reset link has been sent."}
+    token = create_password_reset_token(user["id"])
+    send_password_reset_email(user["email"], user["display_name"] or "User", user["id"])
+    return {"message": "If that email exists, a reset link has been sent."}
