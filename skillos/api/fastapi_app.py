@@ -437,8 +437,9 @@ def tasks(req: Request, u=Depends(_current_user)):
 
 @app.get("/daily", tags=["Problems"])
 def daily(u=Depends(_current_user)):
-    from skillos.db.database import fetchone
-    row = fetchone("SELECT * FROM tasks WHERE is_daily=1 ORDER BY created_at DESC LIMIT 1")
+    from skillos.coaching.service import get_daily_challenge, seed_daily_challenge
+    seed_daily_challenge()
+    row = get_daily_challenge()
     return row or {"message": "No daily challenge set yet"}
 
 
