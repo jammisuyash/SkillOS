@@ -523,10 +523,18 @@ def check_certs(u=Depends(_current_user)):
 
 @app.get("/cert/{cert_id}", tags=["Certifications"])
 def verify_cert(cert_id: str):
-    from skillos.certifications.service import verify_certification
-    c = verify_certification(cert_id)
+    from skillos.db.database import fetchone as _fo
+    c = _fo("""
+        SELECT uc.*, u.display_name, ct.name as cert_name, ct.description,
+               s.name as skill_name
+        FROM user_certifications uc
+        JOIN users u ON u.id = uc.user_id
+        LEFT JOIN certification_types ct ON ct.id = uc.cert_type_id
+        LEFT JOIN skills s ON s.id = ct.skill_id
+        WHERE uc.id = ?
+    """, (cert_id,))
     if not c: raise HTTPException(404, "Certificate not found")
-    return c
+    return dict(c)
 
 
 # ── Leaderboard ───────────────────────────────────────────────────────────────
