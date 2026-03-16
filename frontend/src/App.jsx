@@ -1158,6 +1158,7 @@ function Dashboard({ token, user }) {
       api.get("/users/me/profile", token).catch(() => null),
       api.get("/daily", token).catch(() => null),
       api.get("/analytics", token).catch(() => null),
+      api.get("/users/me/skill-ranks", token).catch(() => null),
     ]).then(([p, d, s]) => {
       setProfile(p?.profile); setDaily(d?.challenge); setStats(s);
     }).finally(() => setLoading(false));
@@ -1200,7 +1201,11 @@ function Dashboard({ token, user }) {
           <h3 className="mb-16">Your Skills</h3>
           {topSkills.length === 0
             ? <Empty icon="🎯" msg="Solve problems to build your skill scores" />
-            : topSkills.map(s => <SkillBar key={s.id} score={s.current_score} name={s.name} />)
+            : topSkills.map(s => {
+                const rank = skillRanks.find(r => r.skill_id === s.skill_id);
+                return <SkillBar key={s.id} score={s.current_score} name={s.name} 
+                  rank={rank ? `Top ${100 - rank.percentile + 1}%` : null} />;
+              })
           }
         </div>
 

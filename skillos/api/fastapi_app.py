@@ -1063,3 +1063,24 @@ def debug_env():
         "smtp": os.environ.get("SMTP_USER", "MISSING"),
         "env": os.environ.get("SKILLOS_ENV", "MISSING"),
     }
+
+@app.get("/users/me/skill-ranks", tags=["Skills"])
+def skill_ranks(u=Depends(_current_user)):
+    from skillos.db.database import fetchall as _fa
+    my_skills = _fa("SELECT skill_id, current_score FROM user_skill_scores WHERE user_id=?", (u["id"],))
+    ranks = []
+    for s in my_skills:
+        total = _fa("SELECT COUNT(*) as cnt FROM user_skill_scores WHERE skill_id=?", (s["skill_id"],))[0]["cnt"]
+        better = _fa("SELECT COUNT(*) as cnt FROM user_skill_scores WHERE skill_id=? AND current_score > ?", (s["skill_id"], s["current_score"]))[0]["cnt"]
+        rank = better + 1
+        percentile = round((1 - rank/total) * 100) if total > 1 else 100
+        skill = _fa("SELECT name FROM skills WHERE id=?", (s["skill_id"],))
+        ranks.append({
+            "skill_id": s["skill_id"],
+            "skill_name": skill[0]["name"] if skill else s["skill_id"],
+            "score": round(s["current_score"], 1),
+            "rank": rank,
+            "total_users": total,
+            "percentile": percentile,
+        })
+    return {"ranks": sorted(ranks, key=lambda x: x["percentile"], reverse=True)}
