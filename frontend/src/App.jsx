@@ -5246,6 +5246,71 @@ const NAV = [
 ];
 const SECTIONS = { platform: "Platform", compete: "Compete", build: "Build", me: "Account" };
 
+function CertVerifyPage({ certId }) {
+  const [cert, setCert] = React.useState(null);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    api.get(`/cert/${certId}`).then(setCert).catch(() => setError("Certificate not found"));
+  }, [certId]);
+
+  if (error) return (
+    <div className="auth-wrap">
+      <div className="auth-card fade-in" style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
+        <h2>Certificate Not Found</h2>
+        <p className="muted">This certificate ID is invalid or has been revoked.</p>
+        <button className="btn btn-primary mt-16" onClick={() => window.location.href="/"}>Go to SkillOS</button>
+      </div>
+    </div>
+  );
+
+  if (!cert) return (
+    <div className="auth-wrap">
+      <div className="auth-card fade-in" style={{ textAlign: "center" }}>
+        <Spinner /> <p className="muted mt-8">Verifying certificate...</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card fade-in" style={{ maxWidth: 520 }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 56, marginBottom: 8 }}>🎓</div>
+          <div className="auth-logo">SKILL<span>OS</span></div>
+          <div style={{ fontSize: 12, color: "var(--accent2)", fontWeight: 700, letterSpacing: 2, marginTop: 4 }}>VERIFIED CERTIFICATE</div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg,rgba(123,94,167,.15),rgba(59,130,246,.1))", 
+                      border: "1px solid rgba(123,94,167,.3)", borderRadius: 12, padding: 24, textAlign: "center" }}>
+          <h2 style={{ marginBottom: 8 }}>{cert.cert_name || cert.certification_name}</h2>
+          <p className="muted" style={{ marginBottom: 16 }}>{cert.description}</p>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--accent)" }}>{cert.display_name || cert.user_name}</div>
+          <div className="muted" style={{ fontSize: 13 }}>has successfully demonstrated proficiency in</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--accent2)", margin: "8px 0" }}>{cert.skill_name}</div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 16 }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "var(--gold)" }}>{cert.score || cert.final_score || "—"}</div>
+              <div className="label">Score</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}</div>
+              <div className="label">Issued</div>
+            </div>
+          </div>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: "var(--muted)" }}>
+          Certificate ID: <code style={{ color: "var(--accent)" }}>{certId}</code>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <span style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 600 }}>✅ AUTHENTICALLY VERIFIED BY SKILLOS</span>
+        </div>
+        <button className="btn btn-primary w-full mt-16" onClick={() => window.location.href="/"}>Get Your Own Certificate →</button>
+      </div>
+    </div>
+  );
+}
+
 function ResetPasswordPage({ resetToken, onDone }) {
   const [password, setPassword] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
@@ -5311,9 +5376,17 @@ export default function App() {
   function onToast(msg, type = "success") { setToast({ msg, type }); }
   function logout() { clearToken(); setUser(null); localStorage.removeItem("sk_user"); }
 
-  // Handle reset password link
+  // Handle cert verification
   const urlParams = new URLSearchParams(window.location.search);
+  const certId = urlParams.get("cert");
   const resetToken = urlParams.get("token");
+  
+  if (certId) return (
+    <>
+      <style>{css}</style>
+      <CertVerifyPage certId={certId} />
+    </>
+  );
   
   // Show email verified toast
   React.useEffect(() => {
