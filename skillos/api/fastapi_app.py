@@ -400,6 +400,13 @@ def get_submission(sid: str, u=Depends(_current_user)):
     s = _g(sid)
     if not s: raise HTTPException(404, "Not found")
     if s.get("user_id") != u["id"]: raise HTTPException(403, "Forbidden")
+    # Auto-check certs when submission is accepted
+    if s.get("status") == "accepted":
+        try:
+            from skillos.certifications.service import check_and_award_certifications
+            check_and_award_certifications(u["id"])
+        except Exception:
+            pass
     return s
 
 @app.get("/users/me/submissions", tags=["Submissions"])
