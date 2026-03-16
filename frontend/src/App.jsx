@@ -4696,8 +4696,13 @@ function Certifications({ token, onToast }) {
   }
 
   function copyVerifyLink(cert) {
-    const url = `${window.location.origin}/verify/${cert.verification_hash}`;
-    navigator.clipboard?.writeText(url).then(() => onToast("Verification link copied!", "success"));
+    const certId = cert.id || cert.verification_hash || cert.cert_id;
+    const url = `${window.location.origin}?cert=${certId}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => onToast("✅ Verification link copied!", "success"));
+    } else {
+      prompt("Copy this verification link:", url);
+    }
   }
 
   const certMap = {};
