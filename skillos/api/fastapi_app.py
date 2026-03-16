@@ -368,6 +368,7 @@ def disable_2fa(b: TwoFABody, u=Depends(_current_user)):
 
 # Sessions
 @app.get("/auth/sessions", tags=["Auth"])
+@app.get("/users/me/sessions", tags=["Auth"])
 def sessions(u=Depends(_current_user)):
     from skillos.auth.device_tracker import get_login_history as get_sessions
     return {"sessions": get_sessions(u["id"])}
