@@ -132,6 +132,30 @@ MIGRATIONS = [
 
 
 
+
+    ("008_seed_learning_paths", """
+        INSERT OR IGNORE INTO learning_paths (id, title, description, domain, difficulty, is_active, ordinal) VALUES
+            ('path-backend', 'Backend Developer Path', 'Master backend engineering from Python basics to system design', 'backend', 'beginner', 1, 1),
+            ('path-dsa', 'Data Structures & Algorithms', 'Complete DSA preparation for technical interviews', 'algorithms', 'intermediate', 1, 2),
+            ('path-security', 'Cybersecurity Engineer', 'Learn web security, cryptography and network defense', 'security', 'intermediate', 1, 3),
+            ('path-fullstack', 'Full Stack Engineer', 'Build complete web applications from frontend to backend', 'web', 'intermediate', 1, 4);
+        INSERT OR IGNORE INTO path_steps (id, path_id, title, description, task_id, skill_id, step_type, ordinal, is_required) VALUES
+            ('step-b1','path-backend','Python Fundamentals','Master Python basics','task-double-001','skill-python-001','problem',1,1),
+            ('step-b2','path-backend','Arrays & Strings','Learn data structures','task-twosum-002','skill-arrays-001','problem',2,1),
+            ('step-b3','path-backend','Hash Maps','Efficient lookups','task-dupcheck-008','skill-hashmaps-001','problem',3,1),
+            ('step-b4','path-backend','REST APIs','HTTP and API design','api-mcq-001','sk-restapi','problem',4,1),
+            ('step-b5','path-backend','System Design','Scalable systems','sd-001','sk-sysarch','problem',5,0),
+            ('step-d1','path-dsa','Arrays','Foundation of DSA','task-maxsub-004','skill-arrays-001','problem',1,1),
+            ('step-d2','path-dsa','Binary Search','O(log n) search','task-bsearch-006','skill-sorting-001','problem',2,1),
+            ('step-d3','path-dsa','Sorting','Sorting algorithms','task-kthlargest-007','skill-sorting-001','problem',3,1),
+            ('step-d4','path-dsa','Recursion','DP foundations','task-climb-009','skill-recursion-001','problem',4,1),
+            ('step-d5','path-dsa','Graphs BFS','Shortest path','task-bfs-010','skill-graphs-001','problem',5,1),
+            ('step-d6','path-dsa','Trees','Tree traversal','task-treeh-011','skill-graphs-001','problem',6,1),
+            ('step-s1','path-security','XSS vs CSRF','Web attacks','sec-mcq-001','sk-vulns','problem',1,1),
+            ('step-s2','path-security','Cryptography','Encryption basics','sec-mcq-002','sk-crypto','problem',2,1),
+            ('step-s3','path-security','Password Security','Secure storage','sec-mcq-004','sk-crypto','problem',3,1),
+            ('step-s4','path-security','SQL Injection','DB security','sec-mcq-005','sk-vulns','problem',4,1);
+    """),
     ("007_fix_submissions_language_constraint", """
         CREATE TABLE IF NOT EXISTS submissions_new (
             id               TEXT PRIMARY KEY,
